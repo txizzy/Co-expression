@@ -206,9 +206,13 @@ fn pearson_correlation(x: &[f64], y: &[f64]) -> (f64,f64) {
 
         let numerator = n as f64 * sum_xy - sum_x * sum_y;
         let denominator = ((n as f64 * sum_x_squared - sum_x * sum_x) * (n as f64 * sum_y_squared - sum_y * sum_y)).sqrt();
-        let correlations = numerator / denominator;
-        let t = correlations.abs() / ((1.0 as f64 - correlations*correlations)/ n as f64).sqrt();
-        let student_t = StudentsT::new(0.0, 1.0, n as f64).unwrap();
+        let correlations = if numerator / denominator > 1.0 {
+            1.0 as f64
+        }else{
+            numerator / denominator 
+        };
+        let t = correlations.abs() / ((1.0 as f64 - correlations*correlations)/ (n - 2)  as f64).sqrt();
+        let student_t = StudentsT::new(0.0, 1.0, (n - 2) as f64).unwrap();
         let p = (1.0 -student_t.cdf(t.abs())) * 2.0;
         (correlations, p)
     }else{
